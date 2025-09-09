@@ -15,8 +15,8 @@ public class CourtMapper {
                 court.getId(),
                 court.getName(),
                 court.getType(),
-                court.getStatus(),
-                court.getPhotoUrls()
+                court.getStatus()
+
         );
     }
     public Court toUpdatedDomain(Court existing, CourtRequest request) {
@@ -26,8 +26,7 @@ public class CourtMapper {
                 request.type(),
                 request.status(),
                 existing.getCreatedAt(),
-                Instant.now(),
-                existing.getPhotoUrls() // Preserve existing photo URLs
+                Instant.now()
         );
     }
 }

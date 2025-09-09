@@ -59,8 +59,8 @@ public class CourtController {
                 request.type(),
                 request.status(),
                 null,
-                null,
                 null
+
         );
 
         var saved = courtUseCase.save(domain);

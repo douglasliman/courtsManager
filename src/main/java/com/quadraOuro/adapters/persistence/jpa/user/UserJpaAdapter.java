@@ -4,12 +4,15 @@ import com.quadraOuro.adapters.persistence.UserJpaEntity;
 import com.quadraOuro.domain.models.User;
 import com.quadraOuro.domain.models.UserRole;
 import com.quadraOuro.ports.out.UserRepositoryPort;
+
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+@Component
 public class UserJpaAdapter implements UserRepositoryPort {
 
     private final SpringDataUserRepository repo;
