@@ -1,0 +1,32 @@
+# Simple Java Maven CI Pipeline for courtsManager
+# This pipeline builds and packages the application, but does not run tests.
+
+name: Build and Package (No Tests)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build with Maven (skip tests)
+        run: mvn -B clean package -DskipTests
+
+      - name: Archive JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: courtsManager-jar
+          path: target/*.jar
