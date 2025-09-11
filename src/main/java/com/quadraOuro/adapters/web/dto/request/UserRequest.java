@@ -14,5 +14,8 @@ public record UserRequest(
         String email,
 
         @NotNull(message = "Role é obrigatória")
-        UserRole role
+        UserRole role,
+
+        @NotBlank(message = "CEP é obrigatório")
+        String cep
 ) {}
