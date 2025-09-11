@@ -10,4 +10,5 @@ public interface UserRepositoryPort {
     List<User> findByRole(UserRole role);
     Optional<User> findById(Long id);
     User save(User user);
+    List<User> findAll();
 }

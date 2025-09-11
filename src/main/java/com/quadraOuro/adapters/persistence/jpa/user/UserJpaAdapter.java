@@ -52,4 +52,9 @@ public class UserJpaAdapter implements UserRepositoryPort {
 
         return UserMapper.toDomain(repo.save(entity));
     }
+
+    @Override
+    public List<User> findAll() {
+        return repo.findAll().stream().map(UserMapper::toDomain).toList();
+    }
 }

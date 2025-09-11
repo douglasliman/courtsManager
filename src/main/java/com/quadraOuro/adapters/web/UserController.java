@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.quadraOuro.adapters.persistence.EnderecoRepository;
 import com.quadraOuro.adapters.web.client.ViaCepClient;
+import com.quadraOuro.adapters.web.dto.EnderecoResponse;
 import com.quadraOuro.adapters.web.dto.request.UserRequest;
-import com.quadraOuro.adapters.web.dto.response.EnderecoResponse;
 import com.quadraOuro.adapters.web.dto.response.UserResponse;
 import com.quadraOuro.adapters.web.exception.CepInvalidoException;
 import com.quadraOuro.domain.models.Endereco;
@@ -37,79 +37,41 @@ public class UserController {
         this.enderecoRepository = enderecoRepository;
     }
 
-    @GetMapping("/admins")
-    public ResponseEntity<List<UserResponse>> listAdmins() {
-        var users = userUseCase.findByRole(UserRole.ADMIN)
-                .stream().map(u -> {
-                    var e = u.getEndereco();
-                    EnderecoResponse enderecoResponse = e == null ? null
-                            : new EnderecoResponse(
-                                    e.getCep(),
-                                    e.getLogradouro(),
-                                    e.getBairro(),
-                                    e.getLocalidade(),
-                                    e.getUf(),
-                                    e.getEstado(),
-                                    e.getRegiao());
-                    return new UserResponse(
-                            u.getId(),
-                            u.getName(),
-                            u.getEmail(),
-                            u.getRole(),
-                            enderecoResponse);
-                })
-                .toList();
-        return ResponseEntity.ok(users);
+    @GetMapping
+    public ResponseEntity<List<UserResponse>> listUsers(
+            @org.springframework.web.bind.annotation.RequestParam(value = "role", required = false) String role) {
+        List<User> users;
+        if (role != null) {
+            try {
+                UserRole userRole = UserRole.valueOf(role.toUpperCase());
+                users = userUseCase.findByRole(userRole);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().build();
+            }
+        } else {
+            users = userUseCase.findAll();
+        }
+        var response = users.stream().map(this::mapToUserResponse).toList();
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/funcionarios")
-    public ResponseEntity<List<UserResponse>> listFuncionarios() {
-        var users = userUseCase.findByRole(UserRole.FUNCIONARIO)
-                .stream().map(u -> {
-                    var e = u.getEndereco();
-                    EnderecoResponse enderecoResponse = e == null ? null
-                            : new EnderecoResponse(
-                                    e.getCep(),
-                                    e.getLogradouro(),
-                                    e.getBairro(),
-                                    e.getLocalidade(),
-                                    e.getUf(),
-                                    e.getEstado(),
-                                    e.getRegiao());
-                    return new UserResponse(
-                            u.getId(),
-                            u.getName(),
-                            u.getEmail(),
-                            u.getRole(),
-                            enderecoResponse);
-                })
-                .toList();
-        return ResponseEntity.ok(users);
-    }
-
-    @GetMapping("/usuarios")
-    public ResponseEntity<List<UserResponse>> listUsuarios() {
-        var users = userUseCase.findByRole(UserRole.USUARIO)
-                .stream().map(u -> {
-                    var e = u.getEndereco();
-                    EnderecoResponse enderecoResponse = e == null ? null
-                            : new EnderecoResponse(
-                                    e.getCep(),
-                                    e.getLogradouro(),
-                                    e.getBairro(),
-                                    e.getLocalidade(),
-                                    e.getUf(),
-                                    e.getEstado(),
-                                    e.getRegiao());
-                    return new UserResponse(
-                            u.getId(),
-                            u.getName(),
-                            u.getEmail(),
-                            u.getRole(),
-                            enderecoResponse);
-                })
-                .toList();
-        return ResponseEntity.ok(users);
+    private UserResponse mapToUserResponse(User u) {
+        var e = u.getEndereco();
+        EnderecoResponse enderecoResponse = e == null ? null
+                : new EnderecoResponse(
+                        e.getCep(),
+                        e.getLogradouro(),
+                        e.getBairro(),
+                        e.getLocalidade(),
+                        e.getUf(),
+                        e.getEstado(),
+                        e.getRegiao());
+        return new UserResponse(
+                u.getId(),
+                u.getName(),
+                u.getEmail(),
+                u.getRole(),
+                enderecoResponse);
     }
 
     @PostMapping
