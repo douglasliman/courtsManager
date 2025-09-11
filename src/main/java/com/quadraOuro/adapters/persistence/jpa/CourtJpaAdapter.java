@@ -1,3 +1,8 @@
+/**
+ * Adapter de persistência para quadras usando JPA/Hibernate.
+ * Implementa a porta de saída CourtRepositoryPort, convertendo entidades JPA para o modelo de domínio.
+ * Não expõe detalhes de infraestrutura para o domínio.
+ */
 package com.quadraOuro.adapters.persistence.jpa;
 
 import com.quadraOuro.adapters.persistence.CourtJpaEntity;

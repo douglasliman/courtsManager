@@ -1,3 +1,7 @@
+/**
+ * Porta de entrada (Application Service) para casos de uso relacionados a usuários.
+ * Define as operações disponíveis para a aplicação manipular usuários, sem expor detalhes de infraestrutura.
+ */
 package com.quadraOuro.ports.in;
 
 import com.quadraOuro.domain.models.User;

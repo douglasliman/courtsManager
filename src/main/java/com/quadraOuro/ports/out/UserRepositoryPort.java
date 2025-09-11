@@ -1,3 +1,8 @@
+/**
+ * Porta de saída para persistência de usuários.
+ * Define o contrato que qualquer implementação de repositório de usuário deve seguir (ex: JPA, memória, etc).
+ * Permite desacoplar o domínio da tecnologia de persistência.
+ */
 
 package com.quadraOuro.ports.out;
 

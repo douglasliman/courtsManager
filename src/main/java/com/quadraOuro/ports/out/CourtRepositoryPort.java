@@ -1,3 +1,8 @@
+/**
+ * Porta de saída para persistência de quadras.
+ * Define o contrato que qualquer implementação de repositório de quadra deve seguir (ex: JPA, memória, etc).
+ * Permite desacoplar o domínio da tecnologia de persistência.
+ */
 package com.quadraOuro.ports.out;
 
 import java.util.List;

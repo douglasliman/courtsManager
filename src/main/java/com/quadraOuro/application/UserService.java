@@ -10,7 +10,7 @@ import com.quadraOuro.adapters.web.dto.request.UserRequest;
 import com.quadraOuro.adapters.web.dto.response.UserResponse;
 import com.quadraOuro.adapters.web.dto.EnderecoResponse;
 import com.quadraOuro.adapters.web.mapper.UserMapper;
-import com.quadraOuro.adapters.web.client.ViaCepClient;
+import com.quadraOuro.adapters.external.ViaCepClient;
 import com.quadraOuro.adapters.persistence.EnderecoRepository;
 import com.quadraOuro.domain.models.Endereco;
 import com.quadraOuro.adapters.web.exception.CepInvalidoException;

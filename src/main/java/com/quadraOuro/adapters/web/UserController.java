@@ -1,3 +1,8 @@
+/**
+ * Adapter web (REST controller) para entrada/saída de usuários.
+ * Recebe requisições HTTP, delega para os casos de uso e converte modelos de domínio para DTOs.
+ * Não contém lógica de negócio.
+ */
 // ...existing code...
 
 
