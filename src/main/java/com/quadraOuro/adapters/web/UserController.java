@@ -1,3 +1,4 @@
+
 package com.quadraOuro.adapters.web;
 
 import java.net.URI;
@@ -16,6 +17,7 @@ import com.quadraOuro.adapters.web.dto.EnderecoResponse;
 import com.quadraOuro.adapters.web.dto.request.UserRequest;
 import com.quadraOuro.adapters.web.dto.response.UserResponse;
 import com.quadraOuro.adapters.web.exception.CepInvalidoException;
+import com.quadraOuro.adapters.web.exception.EmailJaEmUsoException;
 import com.quadraOuro.domain.models.Endereco;
 import com.quadraOuro.domain.models.User;
 import com.quadraOuro.domain.models.UserRole;
@@ -38,6 +40,7 @@ public class UserController {
     }
 
     @GetMapping
+
     public ResponseEntity<List<UserResponse>> listUsers(
             @org.springframework.web.bind.annotation.RequestParam(value = "role", required = false) String role) {
         List<User> users;
@@ -51,12 +54,12 @@ public class UserController {
         } else {
             users = userUseCase.findAll();
         }
-        var response = users.stream().map(this::mapToUserResponse).toList();
+        List<UserResponse> response = users.stream().map(this::mapToUserResponse).toList();
         return ResponseEntity.ok(response);
     }
 
     private UserResponse mapToUserResponse(User u) {
-        var e = u.getEndereco();
+        Endereco e = u.getEndereco();
         EnderecoResponse enderecoResponse = e == null ? null
                 : new EnderecoResponse(
                         e.getCep(),
@@ -76,11 +79,16 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserResponse> create(@Valid @RequestBody UserRequest request) {
+        // Verifica se o email já existe
+        if (userUseCase.existsByEmail(request.email())) {
+            throw new EmailJaEmUsoException("E-mail já está em uso");
+        }
+
         // Buscar endereço pelo CEP
         Endereco endereco;
         try {
             endereco = enderecoRepository.findByCep(request.cep()).orElseGet(() -> {
-                var enderecoViaCep = viaCepClient.getEndereco(request.cep());
+                EnderecoResponse enderecoViaCep = viaCepClient.getEndereco(request.cep());
                 EnderecoResponse enderecoResponse = new EnderecoResponse(
                         enderecoViaCep.cep(),
                         enderecoViaCep.logradouro(),
@@ -106,7 +114,7 @@ public class UserController {
             return ResponseEntity.badRequest().body(null); // Aqui pode-se criar um DTO de erro customizado
         }
 
-        var domain = new User(
+        User domain = new User(
                 null,
                 request.name(),
                 request.email(),
@@ -115,8 +123,8 @@ public class UserController {
                 null,
                 endereco);
 
-        var saved = userUseCase.save(domain);
-        var enderecoSalvo = saved.getEndereco();
+        User saved = userUseCase.save(domain);
+        Endereco enderecoSalvo = saved.getEndereco();
         EnderecoResponse enderecoResponse = enderecoSalvo == null ? null
                 : new EnderecoResponse(
                         enderecoSalvo.getCep(),
@@ -126,7 +134,7 @@ public class UserController {
                         enderecoSalvo.getUf(),
                         enderecoSalvo.getEstado(),
                         enderecoSalvo.getRegiao());
-        var response = new UserResponse(
+        UserResponse response = new UserResponse(
                 saved.getId(),
                 saved.getName(),
                 saved.getEmail(),
@@ -136,5 +144,10 @@ public class UserController {
         return ResponseEntity
                 .created(URI.create("/api/v1/users/" + saved.getId()))
                 .body(response);
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(EmailJaEmUsoException.class)
+    public ResponseEntity<String> handleEmailJaEmUsoException(EmailJaEmUsoException ex) {
+        return ResponseEntity.badRequest().body(ex.getMessage());
     }
 }

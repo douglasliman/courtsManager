@@ -1,3 +1,4 @@
+
 package com.quadraOuro.application;
 
 import com.quadraOuro.domain.models.User;
@@ -31,5 +32,10 @@ public class UserService implements UserUseCase {
     @Override
     public User save(User user) {
         return repository.save(user);
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return repository.existsByEmail(email);
     }
 }

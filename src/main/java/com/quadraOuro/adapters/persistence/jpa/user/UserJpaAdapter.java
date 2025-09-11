@@ -1,3 +1,4 @@
+
 package com.quadraOuro.adapters.persistence.jpa.user;
 
 import java.time.Instant;
@@ -56,5 +57,10 @@ public class UserJpaAdapter implements UserRepositoryPort {
     @Override
     public List<User> findAll() {
         return repo.findAll().stream().map(UserMapper::toDomain).toList();
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return repo.existsByEmail(email);
     }
 }

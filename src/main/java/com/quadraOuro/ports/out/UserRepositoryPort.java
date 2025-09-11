@@ -1,3 +1,4 @@
+
 package com.quadraOuro.ports.out;
 
 import com.quadraOuro.domain.models.User;
@@ -11,4 +12,5 @@ public interface UserRepositoryPort {
     Optional<User> findById(Long id);
     User save(User user);
     List<User> findAll();
+    boolean existsByEmail(String email);
 }
