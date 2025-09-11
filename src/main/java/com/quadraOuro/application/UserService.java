@@ -1,11 +1,21 @@
-
 package com.quadraOuro.application;
+import org.springframework.stereotype.Service;
 
 import com.quadraOuro.domain.models.User;
 import com.quadraOuro.domain.models.UserRole;
+
 import com.quadraOuro.ports.in.UserUseCase;
 import com.quadraOuro.ports.out.UserRepositoryPort;
-import org.springframework.stereotype.Service;
+import com.quadraOuro.adapters.web.dto.request.UserRequest;
+import com.quadraOuro.adapters.web.dto.response.UserResponse;
+import com.quadraOuro.adapters.web.dto.EnderecoResponse;
+import com.quadraOuro.adapters.web.client.ViaCepClient;
+import com.quadraOuro.adapters.persistence.EnderecoRepository;
+import com.quadraOuro.domain.models.Endereco;
+import com.quadraOuro.adapters.web.exception.CepInvalidoException;
+import com.quadraOuro.adapters.web.exception.EmailJaEmUsoException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,10 +23,85 @@ import java.util.Optional;
 @Service
 public class UserService implements UserUseCase {
 
-    private final UserRepositoryPort repository;
+    @Override
+    public List<User> findAll() {
+        return repository.findAll();
+    }
 
-    public UserService(UserRepositoryPort repository) {
+    private final UserRepositoryPort repository;
+    private final ViaCepClient viaCepClient;
+    private final EnderecoRepository enderecoRepository;
+
+    @Autowired
+    public UserService(UserRepositoryPort repository, ViaCepClient viaCepClient, EnderecoRepository enderecoRepository) {
         this.repository = repository;
+        this.viaCepClient = viaCepClient;
+        this.enderecoRepository = enderecoRepository;
+    }
+    @Override
+    @Transactional
+    public UserResponse createUserFromRequest(UserRequest request) {
+        // Verifica se o email já existe
+        if (existsByEmail(request.email())) {
+            throw new EmailJaEmUsoException("E-mail já está em uso");
+        }
+
+        // Buscar endereço pelo CEP
+        Endereco endereco;
+        try {
+            endereco = enderecoRepository.findByCep(request.cep()).orElseGet(() -> {
+                EnderecoResponse enderecoViaCep = viaCepClient.getEndereco(request.cep());
+                EnderecoResponse enderecoResponse = new EnderecoResponse(
+                        enderecoViaCep.cep(),
+                        enderecoViaCep.logradouro(),
+                        enderecoViaCep.bairro(),
+                        enderecoViaCep.localidade(),
+                        enderecoViaCep.uf(),
+                        enderecoViaCep.estado(),
+                        enderecoViaCep.regiao());
+                if (enderecoResponse == null || enderecoResponse.cep() == null) {
+                    throw new CepInvalidoException("CEP inválido");
+                }
+                Endereco novoEndereco = new Endereco();
+                novoEndereco.setCep(enderecoResponse.cep());
+                novoEndereco.setLogradouro(enderecoResponse.logradouro());
+                novoEndereco.setBairro(enderecoResponse.bairro());
+                novoEndereco.setLocalidade(enderecoResponse.localidade());
+                novoEndereco.setUf(enderecoResponse.uf());
+                novoEndereco.setEstado(enderecoResponse.estado());
+                novoEndereco.setRegiao(enderecoResponse.regiao());
+                return enderecoRepository.save(novoEndereco);
+            });
+        } catch (Exception e) {
+            throw new CepInvalidoException("CEP inválido");
+        }
+
+        User domain = new User(
+                null,
+                request.name(),
+                request.email(),
+                request.role(),
+                null,
+                null,
+                endereco);
+
+        User saved = save(domain);
+        Endereco enderecoSalvo = saved.getEndereco();
+        EnderecoResponse enderecoResponse = enderecoSalvo == null ? null
+                : new EnderecoResponse(
+                        enderecoSalvo.getCep(),
+                        enderecoSalvo.getLogradouro(),
+                        enderecoSalvo.getBairro(),
+                        enderecoSalvo.getLocalidade(),
+                        enderecoSalvo.getUf(),
+                        enderecoSalvo.getEstado(),
+                        enderecoSalvo.getRegiao());
+        return new UserResponse(
+                saved.getId(),
+                saved.getName(),
+                saved.getEmail(),
+                saved.getRole(),
+                enderecoResponse);
     }
 
     @Override
