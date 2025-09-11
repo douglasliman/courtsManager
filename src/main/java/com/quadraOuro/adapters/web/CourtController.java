@@ -19,7 +19,6 @@ import com.quadraOuro.adapters.web.dto.CourtRequest;
 import com.quadraOuro.adapters.web.dto.CourtResponse;
 import com.quadraOuro.adapters.web.dto.error.NotFoundException;
 import com.quadraOuro.adapters.web.mapper.CourtMapper;
-import com.quadraOuro.domain.models.Court;
 import com.quadraOuro.domain.models.CourtFilter;
 import com.quadraOuro.domain.models.CourtStatus;
 import com.quadraOuro.ports.in.CourtUseCase;
@@ -60,21 +59,11 @@ public class CourtController {
 
         @PostMapping
         public ResponseEntity<CourtResponse> create(@Valid @RequestBody CourtRequest request) {
-                var domain = new Court(
-                                null,
-                                request.name(),
-                                request.type(),
-                                request.status(),
-                                null,
-                                null
-
-                );
-
+                var domain = courtMapper.toDomain(request);
                 var saved = courtUseCase.save(domain);
-
                 return ResponseEntity
-                                .created(URI.create("/api/v1/courts/" + saved.getId()))
-                                .body(courtMapper.toResponse(saved));
+                        .created(URI.create("/api/v1/courts/" + saved.getId()))
+                        .body(courtMapper.toResponse(saved));
         }
 
         @PutMapping("/{id}")
@@ -92,9 +81,8 @@ public class CourtController {
 
         @DeleteMapping("/{id}")
         public ResponseEntity<Void> delete(@PathVariable Long id) {
-                var existing = courtUseCase.findById(id)
-                                .orElseThrow(() -> new NotFoundException("Court %d não encontrada".formatted(id)));
-
+                courtUseCase.findById(id)
+                        .orElseThrow(() -> new NotFoundException("Court %d não encontrada".formatted(id)));
                 courtUseCase.deleteById(id);
                 return ResponseEntity.noContent().build();
         }

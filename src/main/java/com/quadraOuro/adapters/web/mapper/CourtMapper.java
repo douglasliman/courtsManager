@@ -10,6 +10,16 @@ import java.time.Instant;
 @Component
 public class CourtMapper {
 
+    public Court toDomain(CourtRequest request) {
+        return new Court(
+                null,
+                request.name(),
+                request.type(),
+                request.status(),
+                null,
+                null
+        );
+    }
     public CourtResponse toResponse(Court court) {
         return new CourtResponse(
                 court.getId(),

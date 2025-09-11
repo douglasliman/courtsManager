@@ -9,6 +9,7 @@ import com.quadraOuro.ports.out.UserRepositoryPort;
 import com.quadraOuro.adapters.web.dto.request.UserRequest;
 import com.quadraOuro.adapters.web.dto.response.UserResponse;
 import com.quadraOuro.adapters.web.dto.EnderecoResponse;
+import com.quadraOuro.adapters.web.mapper.UserMapper;
 import com.quadraOuro.adapters.web.client.ViaCepClient;
 import com.quadraOuro.adapters.persistence.EnderecoRepository;
 import com.quadraOuro.domain.models.Endereco;
@@ -51,14 +52,7 @@ public class UserService implements UserUseCase {
         try {
             endereco = enderecoRepository.findByCep(request.cep()).orElseGet(() -> {
                 EnderecoResponse enderecoViaCep = viaCepClient.getEndereco(request.cep());
-                EnderecoResponse enderecoResponse = new EnderecoResponse(
-                        enderecoViaCep.cep(),
-                        enderecoViaCep.logradouro(),
-                        enderecoViaCep.bairro(),
-                        enderecoViaCep.localidade(),
-                        enderecoViaCep.uf(),
-                        enderecoViaCep.estado(),
-                        enderecoViaCep.regiao());
+                EnderecoResponse enderecoResponse = enderecoViaCep;
                 if (enderecoResponse == null || enderecoResponse.cep() == null) {
                     throw new CepInvalidoException("CEP inválido");
                 }
@@ -87,21 +81,13 @@ public class UserService implements UserUseCase {
 
         User saved = save(domain);
         Endereco enderecoSalvo = saved.getEndereco();
-        EnderecoResponse enderecoResponse = enderecoSalvo == null ? null
-                : new EnderecoResponse(
-                        enderecoSalvo.getCep(),
-                        enderecoSalvo.getLogradouro(),
-                        enderecoSalvo.getBairro(),
-                        enderecoSalvo.getLocalidade(),
-                        enderecoSalvo.getUf(),
-                        enderecoSalvo.getEstado(),
-                        enderecoSalvo.getRegiao());
-        return new UserResponse(
-                saved.getId(),
-                saved.getName(),
-                saved.getEmail(),
-                saved.getRole(),
-                enderecoResponse);
+    EnderecoResponse enderecoResponse = UserMapper.toEnderecoResponse(enderecoSalvo);
+    return new UserResponse(
+        saved.getId(),
+        saved.getName(),
+        saved.getEmail(),
+        saved.getRole(),
+        enderecoResponse);
     }
 
     @Override
