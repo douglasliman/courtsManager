@@ -23,7 +23,7 @@ public class CourtQueryService implements CourtUseCase {
 
     @Override
     public Optional<Court> findById(Long id) {
-        return Optional.empty();
+        return repository.findById(id);
     }
 
     @Override

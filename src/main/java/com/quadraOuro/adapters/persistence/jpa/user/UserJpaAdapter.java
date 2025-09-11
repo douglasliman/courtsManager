@@ -1,15 +1,19 @@
-package com.quadraOuro.adapters.persistence.jpa.user;
 
-import com.quadraOuro.adapters.persistence.UserJpaEntity;
-import com.quadraOuro.domain.models.User;
-import com.quadraOuro.domain.models.UserRole;
-import com.quadraOuro.ports.out.UserRepositoryPort;
-import org.springframework.transaction.annotation.Transactional;
+package com.quadraOuro.adapters.persistence.jpa.user;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.quadraOuro.adapters.persistence.UserJpaEntity;
+import com.quadraOuro.domain.models.User;
+import com.quadraOuro.domain.models.UserRole;
+import com.quadraOuro.ports.out.UserRepositoryPort;
+
+@Component
 public class UserJpaAdapter implements UserRepositoryPort {
 
     private final SpringDataUserRepository repo;
@@ -44,6 +48,19 @@ public class UserJpaAdapter implements UserRepositoryPort {
         }
         entity.setUpdatedAt(Instant.now());
 
+        // Mapear endereço
+        entity.setEndereco(user.getEndereco());
+
         return UserMapper.toDomain(repo.save(entity));
+    }
+
+    @Override
+    public List<User> findAll() {
+        return repo.findAll().stream().map(UserMapper::toDomain).toList();
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return repo.existsByEmail(email);
     }
 }

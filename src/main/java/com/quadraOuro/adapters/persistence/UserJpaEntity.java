@@ -1,6 +1,7 @@
 package com.quadraOuro.adapters.persistence;
 
 import com.quadraOuro.domain.models.UserRole;
+import com.quadraOuro.domain.models.Endereco;
 import jakarta.persistence.*;
 
 import java.time.Instant;
@@ -12,6 +13,7 @@ public class UserJpaEntity {
     private Long id;
 
     private String name;
+    @Column(unique = true, nullable = false)
     private String email;
 
     @Enumerated(EnumType.STRING)
@@ -23,7 +25,13 @@ public class UserJpaEntity {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
+    @OneToOne(optional = false, cascade = CascadeType.ALL)
+    @JoinColumn(name = "endereco_id", referencedColumnName = "id", nullable = false)
+    private Endereco endereco;
+
     // getters/setters
+    public Endereco getEndereco() { return endereco; }
+    public void setEndereco(Endereco endereco) { this.endereco = endereco; }
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }

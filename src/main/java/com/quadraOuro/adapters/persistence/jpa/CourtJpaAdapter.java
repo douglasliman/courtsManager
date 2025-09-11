@@ -38,7 +38,7 @@ public class CourtJpaAdapter implements CourtRepositoryPort {
     }
 
     @Override
-    public Optional<Court> findByid(Long id) {
+    public Optional<Court> findById(Long id) { // Corrigido de findByid para findById
         return repo.findById(id).map(CourtMapper::toDomain);
     }
 

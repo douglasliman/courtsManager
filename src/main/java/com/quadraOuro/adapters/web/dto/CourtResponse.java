@@ -8,6 +8,6 @@ public record CourtResponse(
         Long id,
         String name,
         String type,
-        CourtStatus status,
-        List<String> photoUrls // New field
+        CourtStatus status
+
 ) {}
