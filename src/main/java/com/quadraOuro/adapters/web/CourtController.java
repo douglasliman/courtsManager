@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.quadraOuro.adapters.web.dto.CourtRequest;
 import com.quadraOuro.adapters.web.dto.CourtResponse;
 import com.quadraOuro.adapters.web.dto.error.NotFoundException;
+import com.quadraOuro.domain.exception.CourtNotFoundException;
 import com.quadraOuro.adapters.web.mapper.CourtMapper;
 import com.quadraOuro.domain.models.CourtFilter;
 import com.quadraOuro.domain.models.CourtStatus;
@@ -49,13 +50,16 @@ public class CourtController {
                 return ResponseEntity.ok(result);
         }
 
-        // GET /api/v1/courts/{id}
+        // ...existing code...
         @GetMapping("/{id}")
-        public ResponseEntity<CourtResponse> getById(@PathVariable Long id) {
-                var court = courtUseCase.findById(id)
-                                .orElseThrow(() -> new NotFoundException("Court %d não encontrada".formatted(id)));
-                return ResponseEntity.ok(courtMapper.toResponse(court));
-        }
+                public ResponseEntity<CourtResponse> getById(@PathVariable Long id) {
+                                try {
+                                        var court = courtUseCase.findById(id);
+                                        return ResponseEntity.ok(courtMapper.toResponse(court));
+                                } catch (CourtNotFoundException ex) {
+                                        throw new NotFoundException(ex.getMessage());
+                                }
+                }
 
         @PostMapping
         public ResponseEntity<CourtResponse> create(@Valid @RequestBody CourtRequest request) {
@@ -67,23 +71,27 @@ public class CourtController {
         }
 
         @PutMapping("/{id}")
-        public ResponseEntity<CourtResponse> update(
-                        @PathVariable Long id,
-                        @Valid @RequestBody CourtRequest request) {
-                var existing = courtUseCase.findById(id)
-                                .orElseThrow(() -> new NotFoundException("Court %d não encontrada".formatted(id)));
-
-                var updated = courtMapper.toUpdatedDomain(existing, request);
-                var saved = courtUseCase.save(updated);
-
-                return ResponseEntity.ok(courtMapper.toResponse(saved));
-        }
+                public ResponseEntity<CourtResponse> update(
+                                                @PathVariable Long id,
+                                                @Valid @RequestBody CourtRequest request) {
+                                try {
+                                        var existing = courtUseCase.findById(id);
+                                        var updated = courtMapper.toUpdatedDomain(existing, request);
+                                        var saved = courtUseCase.save(updated);
+                                        return ResponseEntity.ok(courtMapper.toResponse(saved));
+                                } catch (CourtNotFoundException ex) {
+                                        throw new NotFoundException(ex.getMessage());
+                                }
+                }
 
         @DeleteMapping("/{id}")
-        public ResponseEntity<Void> delete(@PathVariable Long id) {
-                courtUseCase.findById(id)
-                        .orElseThrow(() -> new NotFoundException("Court %d não encontrada".formatted(id)));
-                courtUseCase.deleteById(id);
-                return ResponseEntity.noContent().build();
-        }
+                public ResponseEntity<Void> delete(@PathVariable Long id) {
+                                try {
+                                        courtUseCase.findById(id);
+                                        courtUseCase.deleteById(id);
+                                        return ResponseEntity.noContent().build();
+                                } catch (CourtNotFoundException ex) {
+                                        throw new NotFoundException(ex.getMessage());
+                                }
+                }
 }

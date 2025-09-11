@@ -14,12 +14,14 @@ import com.quadraOuro.adapters.web.client.ViaCepClient;
 import com.quadraOuro.adapters.persistence.EnderecoRepository;
 import com.quadraOuro.domain.models.Endereco;
 import com.quadraOuro.adapters.web.exception.CepInvalidoException;
+import com.quadraOuro.domain.exception.EnderecoNotFoundException;
 import com.quadraOuro.adapters.web.exception.EmailJaEmUsoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import com.quadraOuro.domain.exception.UserNotFoundException;
 
 @Service
 public class UserService implements UserUseCase {
@@ -49,26 +51,22 @@ public class UserService implements UserUseCase {
 
         // Buscar endereço pelo CEP
         Endereco endereco;
-        try {
-            endereco = enderecoRepository.findByCep(request.cep()).orElseGet(() -> {
-                EnderecoResponse enderecoViaCep = viaCepClient.getEndereco(request.cep());
-                EnderecoResponse enderecoResponse = enderecoViaCep;
-                if (enderecoResponse == null || enderecoResponse.cep() == null) {
-                    throw new CepInvalidoException("CEP inválido");
-                }
-                Endereco novoEndereco = new Endereco();
-                novoEndereco.setCep(enderecoResponse.cep());
-                novoEndereco.setLogradouro(enderecoResponse.logradouro());
-                novoEndereco.setBairro(enderecoResponse.bairro());
-                novoEndereco.setLocalidade(enderecoResponse.localidade());
-                novoEndereco.setUf(enderecoResponse.uf());
-                novoEndereco.setEstado(enderecoResponse.estado());
-                novoEndereco.setRegiao(enderecoResponse.regiao());
-                return enderecoRepository.save(novoEndereco);
-            });
-        } catch (Exception e) {
-            throw new CepInvalidoException("CEP inválido");
-        }
+        endereco = enderecoRepository.findByCep(request.cep()).orElseGet(() -> {
+            EnderecoResponse enderecoViaCep = viaCepClient.getEndereco(request.cep());
+            EnderecoResponse enderecoResponse = enderecoViaCep;
+            if (enderecoResponse == null || enderecoResponse.cep() == null) {
+                throw new EnderecoNotFoundException(request.cep());
+            }
+            Endereco novoEndereco = new Endereco();
+            novoEndereco.setCep(enderecoResponse.cep());
+            novoEndereco.setLogradouro(enderecoResponse.logradouro());
+            novoEndereco.setBairro(enderecoResponse.bairro());
+            novoEndereco.setLocalidade(enderecoResponse.localidade());
+            novoEndereco.setUf(enderecoResponse.uf());
+            novoEndereco.setEstado(enderecoResponse.estado());
+            novoEndereco.setRegiao(enderecoResponse.regiao());
+            return enderecoRepository.save(novoEndereco);
+        });
 
         User domain = new User(
                 null,
@@ -96,8 +94,9 @@ public class UserService implements UserUseCase {
     }
 
     @Override
-    public Optional<User> findById(Long id) {
-        return repository.findById(id);
+    public User findById(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     @Override

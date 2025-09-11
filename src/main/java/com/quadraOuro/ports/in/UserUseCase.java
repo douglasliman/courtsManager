@@ -11,10 +11,9 @@ import com.quadraOuro.adapters.web.dto.response.UserResponse;
 
 public interface UserUseCase {
     List<User> findByRole(UserRole role);
-    Optional<User> findById(Long id);
+    User findById(Long id);
     User save(User user);
     List<User> findAll();
     boolean existsByEmail(String email);
-
     UserResponse createUserFromRequest(UserRequest request);
 }

@@ -6,7 +6,8 @@ import com.quadraOuro.ports.in.CourtUseCase;
 import com.quadraOuro.ports.out.CourtRepositoryPort;
 
 import java.util.List;
-import java.util.Optional;
+// ...existing code...
+import com.quadraOuro.domain.exception.CourtNotFoundException;
 
 public class CourtQueryService implements CourtUseCase {
 
@@ -22,8 +23,9 @@ public class CourtQueryService implements CourtUseCase {
     }
 
     @Override
-    public Optional<Court> findById(Long id) {
-        return repository.findById(id);
+    public Court findById(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new CourtNotFoundException(id));
     }
 
     @Override
